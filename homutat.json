@@ -1,0 +1,187 @@
+{
+  "last_updated": "2025-12-18 17:51:15",
+  "mods": [
+    {
+      "name": "Void Takeover [DEMO]",
+      "mod_id": 5302402,
+      "file_id": 7121182,
+      "url": "https://mod.io/g/bonelab/m/void-takeover-demo#description",
+      "required": true
+    },
+    {
+      "name": "Ability Pack",
+      "mod_id": 5106083,
+      "file_id": 6610312,
+      "url": "https://mod.io/g/bonelab/m/ability-pack#description",
+      "required": true
+    },
+    {
+      "name": "Desert Eagle",
+      "mod_id": 4061175,
+      "file_id": 5366062,
+      "url": "https://mod.io/g/bonelab/m/desert-eagle-patch4#description",
+      "required": true
+    },
+    {
+      "name": "Fusion Cosmetics | CODE MOD REQUIRED",
+      "mod_id": 4106245,
+      "file_id": 6461468,
+      "url": "https://mod.io/g/bonelab/m/fusion-cosmetics#description",
+      "required": true
+    },
+    {
+      "name": "The Revolver (RUSSIAN ROULETTE) | Experiment #1",
+      "mod_id": 4605413,
+      "file_id": 5929882,
+      "url": "https://mod.io/g/bonelab/m/the-revolver-russian-roulette-experiment-1#description",
+      "required": true
+    },
+    {
+      "name": "Combat Tank (Patch 6)",
+      "mod_id": 5559084,
+      "file_id": 7119447,
+      "url": "https://mod.io/g/bonelab/m/combat-tank-patch-6#description",
+      "required": true
+    },
+    {
+      "name": "M82A1",
+      "mod_id": 4908624,
+      "file_id": 6391403,
+      "url": "https://mod.io/g/bonelab/m/m82a1#description",
+      "required": true
+    },
+    {
+      "name": "The Utilists",
+      "mod_id": 4672574,
+      "file_id": 6366828,
+      "url": "https://mod.io/g/bonelab/m/the-utilists#description",
+      "required": true
+    },
+    {
+      "name": "Drinkable Cans &amp; Bottles",
+      "mod_id": 3782411,
+      "file_id": 6367519,
+      "url": "https://mod.io/g/bonelab/m/drinkable-cans#description",
+      "required": true
+    },
+    {
+      "name": "Pencils (Patch 6)",
+      "mod_id": 4354876,
+      "file_id": 6268617,
+      "url": "https://mod.io/g/bonelab/m/pencil-lab#description",
+      "required": true
+    },
+    {
+      "name": "Plaiddle Poddle Plane",
+      "mod_id": 5285879,
+      "file_id": 6863525,
+      "url": "https://mod.io/g/bonelab/m/plaiddle-poddle-plane#description",
+      "required": true
+    },
+    {
+      "name": "Mega's Car Pack",
+      "mod_id": 3603348,
+      "file_id": 6884733,
+      "url": "https://mod.io/g/bonelab/m/megas-car-pack#description",
+      "required": true
+    },
+    {
+      "name": "Spaceship Mod Pack PATCH 6 NEW UPDATE",
+      "mod_id": 5306108,
+      "file_id": 7012137,
+      "url": "https://mod.io/g/bonelab/m/spaceship-mod-patch-6#description",
+      "required": true
+    },
+    {
+      "name": "Grug",
+      "mod_id": 4942896,
+      "file_id": 7151547,
+      "url": "https://mod.io/g/bonelab/m/grug#description",
+      "required": true
+    },
+    {
+      "name": "(PATCH 6) Cardboard Buddy",
+      "mod_id": 4295722,
+      "file_id": 5528554,
+      "url": "https://mod.io/g/bonelab/m/cardboard-buddy#description",
+      "required": true
+    },
+    {
+      "name": "CARDBOARD DEAGLE (PATCH 6)",
+      "mod_id": 4345587,
+      "file_id": 5579122,
+      "url": "https://mod.io/g/bonelab/m/cardboard-deagle#description",
+      "required": true
+    },
+    {
+      "name": "CardBoard Weapon Pack (NEW GUNS) 1.1",
+      "mod_id": 4789228,
+      "file_id": 6199548,
+      "url": "https://mod.io/g/bonelab/m/cardboard-weapon-pack#description",
+      "required": true
+    },
+    {
+      "name": "Fortnite Card Dance",
+      "mod_id": 4804512,
+      "file_id": 6190991,
+      "url": "https://mod.io/g/bonelab/m/fortnite-card-dance#description",
+      "required": true
+    },
+    {
+      "name": "Reaper BO3 (Fully functional SCYTHE) P6 He's backk",
+      "mod_id": 2714515,
+      "file_id": 5705284,
+      "url": "https://mod.io/g/bonelab/m/reaper-bo3-fully-functional-scythe-p6#description",
+      "required": true
+    },
+    {
+      "name": "THE CONSUMED",
+      "mod_id": 5430529,
+      "file_id": 6990765,
+      "url": "https://mod.io/g/bonelab/m/the-consumed#description",
+      "required": true
+    },
+    {
+      "name": "Log Man NPCs",
+      "mod_id": 5316833,
+      "file_id": 6888921,
+      "url": "https://mod.io/g/bonelab/m/log-man-npcs#description",
+      "required": true
+    },
+    {
+      "name": "BaBaCorp's Toybox",
+      "mod_id": 5029559,
+      "file_id": 6877939,
+      "url": "https://mod.io/g/bonelab/m/babacorps-toybox#description",
+      "required": true
+    },
+    {
+      "name": "The Nullbody Pack",
+      "mod_id": 4506419,
+      "file_id": 5948792,
+      "url": "https://mod.io/g/bonelab/m/nulls-from-the-void-updated#description",
+      "required": true
+    },
+    {
+      "name": "Syringes (Patch 6)",
+      "mod_id": 4161270,
+      "file_id": 5890710,
+      "url": "https://mod.io/g/bonelab/m/syringe-sleep-experiments-bonelab-tranquilizer#description",
+      "required": true
+    },
+    {
+      "name": "Miscellaneous Explosive Devices",
+      "mod_id": 4158753,
+      "file_id": 6878798,
+      "url": "https://mod.io/g/bonelab/m/miscellaneous-explosive-devices#description",
+      "required": true
+    },
+    {
+      "name": "Ammo Can",
+      "mod_id": 4061166,
+      "file_id": 5487638,
+      "url": "https://mod.io/g/bonelab/m/ammo-can#description",
+      "required": true
+    }
+  ]
+}
