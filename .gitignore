@@ -9,7 +9,8 @@ __pycache__/
 
 # Игнорировать мои админские скрипты
 admin.py
-START_ADMIN.bat
+START-ADMIN.bat
+icon.ico
 
 # Игнорировать исходник клиента (друзьям нужен только exe)
 client.py
