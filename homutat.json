@@ -1,5 +1,5 @@
 {
-  "last_updated": "2025-12-18 17:51:15",
+  "last_updated": "2025-12-18 18:21:26",
   "mods": [
     {
       "name": "Void Takeover [DEMO]",
@@ -181,6 +181,13 @@
       "mod_id": 4061166,
       "file_id": 5487638,
       "url": "https://mod.io/g/bonelab/m/ammo-can#description",
+      "required": true
+    },
+    {
+      "name": "Fusion Content | CODE MOD REQUIRED",
+      "mod_id": 4106243,
+      "file_id": 6461473,
+      "url": "https://mod.io/g/bonelab/m/fusion-content#description",
       "required": true
     }
   ]
