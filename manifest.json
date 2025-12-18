@@ -1,1 +1,12 @@
-{"last_updated": "", "mods": []}
+{
+  "last_updated": "2025-12-18 12:47:41",
+  "mods": [
+    {
+      "name": "FPV Kamikaze Drone (Update)",
+      "mod_id": 5552648,
+      "file_id": 7147617,
+      "url": "https://mod.io/g/bonelab/m/fpv-kamikaze-drone",
+      "required": true
+    }
+  ]
+}
