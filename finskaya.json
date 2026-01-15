@@ -1,0 +1,264 @@
+{
+  "last_updated": "2026-01-15 19:29:58",
+  "mods": [
+    {
+      "name": "Bonelab: ERROR (Pre-Alpha)",
+      "mod_id": 3361938,
+      "file_id": 6820975,
+      "url": "https://mod.io/g/bonelab/m/bonelaberror#description",
+      "required": true
+    },
+    {
+      "name": "THE CONSUMED",
+      "mod_id": 5430529,
+      "file_id": 6990765,
+      "url": "https://mod.io/g/bonelab/m/the-consumed#description",
+      "required": true
+    },
+    {
+      "name": "FPV Kamikaze Drone (Update)",
+      "mod_id": 5552648,
+      "file_id": 7147617,
+      "url": "https://mod.io/g/bonelab/m/fpv-kamikaze-drone#description",
+      "required": true
+    },
+    {
+      "name": "Infinite Ammo",
+      "mod_id": 5598648,
+      "file_id": 7220249,
+      "url": "https://mod.io/g/bonelab/m/infinite-ammo1#description",
+      "required": true
+    },
+    {
+      "name": "Ammo Can",
+      "mod_id": 4061166,
+      "file_id": 5487638,
+      "url": "https://mod.io/g/bonelab/m/ammo-can#description",
+      "required": true
+    },
+    {
+      "name": "Hunter's Weapons Pack 0.7 (P6)",
+      "mod_id": 4064389,
+      "file_id": 5768287,
+      "url": "https://mod.io/g/bonelab/m/hunters-weapons-pack-07#description",
+      "required": true
+    },
+    {
+      "name": "Miscellaneous Explosive Devices",
+      "mod_id": 4158753,
+      "file_id": 6878798,
+      "url": "https://mod.io/g/bonelab/m/miscellaneous-explosive-devices#description",
+      "required": true
+    },
+    {
+      "name": "The Revolver (RUSSIAN ROULETTE) | Experiment #1",
+      "mod_id": 4605413,
+      "file_id": 5929882,
+      "url": "https://mod.io/g/bonelab/m/the-revolver-russian-roulette-experiment-1#description",
+      "required": true
+    },
+    {
+      "name": "Chonk Ford",
+      "mod_id": 4753344,
+      "file_id": 6695202,
+      "url": "https://mod.io/g/bonelab/m/chonk-ford#description",
+      "required": true
+    },
+    {
+      "name": "Uzi's Railgun | Murder Drones",
+      "mod_id": 4613969,
+      "file_id": 6375481,
+      "url": "https://mod.io/g/bonelab/m/uzis-railgun-psx#description",
+      "required": true
+    },
+    {
+      "name": "Schmittys Stockpile MK2 (REVOLVER)",
+      "mod_id": 4622526,
+      "file_id": 6446219,
+      "url": "https://mod.io/g/bonelab/m/schmittys-stockpile-mk2#description",
+      "required": true
+    },
+    {
+      "name": "Pixel Gun 3D Weapon Pack",
+      "mod_id": 4602395,
+      "file_id": 7164800,
+      "url": "https://mod.io/g/bonelab/m/pixel-gun-3d-weapon-pack#description",
+      "required": true
+    },
+    {
+      "name": "Schmitty Surplus (Update)",
+      "mod_id": 5192879,
+      "file_id": 7075633,
+      "url": "https://mod.io/g/bonelab/m/schmitty-surplus1#description",
+      "required": true
+    },
+    {
+      "name": "Outline Playermodel",
+      "mod_id": 4909723,
+      "file_id": 6327439,
+      "url": "https://mod.io/g/bonelab/m/outline-playermodel2025#description",
+      "required": true
+    },
+    {
+      "name": "Cursed Fords Pack",
+      "mod_id": 5574456,
+      "file_id": 7258311,
+      "url": "https://mod.io/g/bonelab/m/cursed-fords-pack#description",
+      "required": true
+    },
+    {
+      "name": "The Utilists",
+      "mod_id": 4672574,
+      "file_id": 6366828,
+      "url": "https://mod.io/g/bonelab/m/the-utilists#description",
+      "required": true
+    },
+    {
+      "name": "The Citizens | JEREMY BEROZI UPDATE",
+      "mod_id": 5048220,
+      "file_id": 6736495,
+      "url": "https://mod.io/g/bonelab/m/the-citizens#description",
+      "required": true
+    },
+    {
+      "name": "Epic Skeleton avatar pack (weird skeleton update)",
+      "mod_id": 4365550,
+      "file_id": 5627638,
+      "url": "https://mod.io/g/bonelab/m/epic-skeleton-avatar-pack#description",
+      "required": true
+    },
+    {
+      "name": "M82A2 (Supports Attachments)",
+      "mod_id": 2836190,
+      "file_id": 3589772,
+      "url": "https://mod.io/g/bonelab/m/m82a2#description",
+      "required": true
+    },
+    {
+      "name": "M82A1",
+      "mod_id": 4908624,
+      "file_id": 6391403,
+      "url": "https://mod.io/g/bonelab/m/m82a1#description",
+      "required": true
+    },
+    {
+      "name": "Desert Eagle",
+      "mod_id": 4061175,
+      "file_id": 5366062,
+      "url": "https://mod.io/g/bonelab/m/desert-eagle-patch4#description",
+      "required": true
+    },
+    {
+      "name": "Signalis Mega Pack",
+      "mod_id": 4673044,
+      "file_id": 7246989,
+      "url": "https://mod.io/g/bonelab/m/signalis-mega-pack#description",
+      "required": true
+    },
+    {
+      "name": "BAMMY COMPANION MOD",
+      "mod_id": 5525529,
+      "file_id": 7083939,
+      "url": "https://mod.io/g/bonelab/m/bammydoughboiplushie#description",
+      "required": true
+    },
+    {
+      "name": "Drinkable Cans &amp; Bottles",
+      "mod_id": 3782411,
+      "file_id": 6367519,
+      "url": "https://mod.io/g/bonelab/m/drinkable-cans#description",
+      "required": true
+    },
+    {
+      "name": "Ready or Not Pack  (P6)",
+      "mod_id": 3289780,
+      "file_id": 5700993,
+      "url": "https://mod.io/g/bonelab/m/ready-or-not-gun-pack-supports-rexs-attach-1#description",
+      "required": true
+    },
+    {
+      "name": "Weapon Pack v2",
+      "mod_id": 5070285,
+      "file_id": 6580943,
+      "url": "https://mod.io/g/bonelab/m/weapon-pack-v2#description",
+      "required": true
+    },
+    {
+      "name": "stayx's Weapon Pack",
+      "mod_id": 4117852,
+      "file_id": 6251013,
+      "url": "https://mod.io/g/bonelab/m/stayxs-weapon-pack#description",
+      "required": true
+    },
+    {
+      "name": "Mango's Weapon Pack (FINISHED)",
+      "mod_id": 4348635,
+      "file_id": 6552391,
+      "url": "https://mod.io/g/bonelab/m/mangos-weapon-pack#description",
+      "required": true
+    },
+    {
+      "name": "Patch 6 - Stak Pack | Final Update",
+      "mod_id": 4094743,
+      "file_id": 6622312,
+      "url": "https://mod.io/g/bonelab/m/stak-pack#description",
+      "required": true
+    },
+    {
+      "name": "cs_insertion2",
+      "mod_id": 3682336,
+      "file_id": 4741980,
+      "url": "https://mod.io/g/bonelab/m/cs-insertion21#description",
+      "required": true
+    },
+    {
+      "name": "Frio Forest",
+      "mod_id": 5191926,
+      "file_id": 6710007,
+      "url": "https://mod.io/g/bonelab/m/frio-forest#description",
+      "required": true
+    },
+    {
+      "name": "Rexmeck's Weapon Pack LT",
+      "mod_id": 5143822,
+      "file_id": 7089363,
+      "url": "https://mod.io/g/bonelab/m/rexmecks-weapon-pack-lt#description",
+      "required": true
+    },
+    {
+      "name": "Security Ford Remaster + Extras",
+      "mod_id": 4433445,
+      "file_id": 6722033,
+      "url": "https://mod.io/g/bonelab/m/security-fordearly-exit-avatars#description",
+      "required": true
+    },
+    {
+      "name": "Fusion Content | CODE MOD REQUIRED",
+      "mod_id": 4106243,
+      "file_id": 6461473,
+      "url": "https://mod.io/g/bonelab/m/fusion-content#description",
+      "required": true
+    },
+    {
+      "name": "Fusion Cosmetics | CODE MOD REQUIRED",
+      "mod_id": 4106245,
+      "file_id": 6461468,
+      "url": "https://mod.io/g/bonelab/m/fusion-cosmetics#description",
+      "required": true
+    },
+    {
+      "name": "[Pixel Gun 3D] Paradise Resort (FUSION SUPPORT)",
+      "mod_id": 3084654,
+      "file_id": 3959164,
+      "url": "https://mod.io/g/bonelab/m/pixel-gun-3d-paradise-resort-fusion-support#description",
+      "required": true
+    },
+    {
+      "name": "Chess (Fusion Support)",
+      "mod_id": 2857335,
+      "file_id": 3638515,
+      "url": "https://mod.io/g/bonelab/m/chess-fusion#description",
+      "required": true
+    }
+  ]
+}
