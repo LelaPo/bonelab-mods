@@ -1,0 +1,61 @@
+{
+  "last_updated": "2026-01-15 21:12:38",
+  "mods": [
+    {
+      "name": "Bonelab: ERROR (Pre-Alpha)",
+      "mod_id": 3361938,
+      "file_id": 4321427,
+      "url": "https://mod.io/g/bonelab/m/bonelaberror#description",
+      "required": true
+    },
+    {
+      "name": "THE CONSUMED",
+      "mod_id": 5430529,
+      "file_id": 6990756,
+      "url": "https://mod.io/g/bonelab/m/the-consumed#description",
+      "required": true
+    },
+    {
+      "name": "FPV Kamikaze Drone (Update)",
+      "mod_id": 5552648,
+      "file_id": 7112534,
+      "url": "https://mod.io/g/bonelab/m/fpv-kamikaze-drone#description",
+      "required": true
+    },
+    {
+      "name": "Infinite Ammo",
+      "mod_id": 5598648,
+      "file_id": 7165209,
+      "url": "https://mod.io/g/bonelab/m/infinite-ammo1#description",
+      "required": true
+    },
+    {
+      "name": "Ammo Can",
+      "mod_id": 4061166,
+      "file_id": 5214141,
+      "url": "https://mod.io/g/bonelab/m/ammo-can#description",
+      "required": true
+    },
+    {
+      "name": "Hunter's Weapons Pack 0.7 (P6)",
+      "mod_id": 4064389,
+      "file_id": 5218298,
+      "url": "https://mod.io/g/bonelab/m/hunters-weapons-pack-07#description",
+      "required": true
+    },
+    {
+      "name": "Miscellaneous Explosive Devices",
+      "mod_id": 4158753,
+      "file_id": 5337894,
+      "url": "https://mod.io/g/bonelab/m/miscellaneous-explosive-devices#description",
+      "required": true
+    },
+    {
+      "name": "M82A1",
+      "mod_id": 4908624,
+      "file_id": 6329787,
+      "url": "https://mod.io/g/bonelab/m/m82a1#description",
+      "required": true
+    }
+  ]
+}
