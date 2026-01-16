@@ -1,17 +1,32 @@
 {
+  "anton": {
+    "path": "profiles/anton.json",
+    "title": "Anton",
+    "description": "Описание отсутствует"
+  },
   "default": {
     "path": "profiles/default.json",
-    "title": "Базовая сборка",
-    "description": "Основные моды, карты и аватары"
+    "title": "Default",
+    "description": "Описание отсутствует"
   },
-  "pvp": {
-    "path": "profiles/pvp.json",
-    "title": "PvP Арены",
-    "description": "Для игры с друзьями, только карты и оружие"
+  "finskaya": {
+    "path": "profiles/finskaya.json",
+    "title": "Finskaya",
+    "description": "Описание отсутствует"
   },
-  "quest": {
-    "path": "profiles/quest.json",
-    "title": "Quest Port",
-    "description": "Легкие моды для слабых ПК"
+  "finskii2": {
+    "path": "profiles/finskii2.json",
+    "title": "Finskii2",
+    "description": "Описание отсутствует"
+  },
+  "homutat": {
+    "path": "profiles/homutat.json",
+    "title": "Homutat",
+    "description": "Описание отсутствует"
+  },
+  "manifest": {
+    "path": "profiles/manifest.json",
+    "title": "Manifest",
+    "description": "Описание отсутствует"
   }
 }
