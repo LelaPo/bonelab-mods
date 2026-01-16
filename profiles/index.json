@@ -1,0 +1,17 @@
+{
+  "default": {
+    "path": "profiles/default.json",
+    "title": "Базовая сборка",
+    "description": "Основные моды, карты и аватары"
+  },
+  "pvp": {
+    "path": "profiles/pvp.json",
+    "title": "PvP Арены",
+    "description": "Для игры с друзьями, только карты и оружие"
+  },
+  "quest": {
+    "path": "profiles/quest.json",
+    "title": "Quest Port",
+    "description": "Легкие моды для слабых ПК"
+  }
+}

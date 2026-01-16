@@ -1,0 +1,6 @@
+{
+  "mod_io_key": "cc192d4610be216a225b6f8e0ab62780",
+  "worker_url": "https://bonelab-logger.TVOY-SUBDOMAIN.workers.dev",
+  "default_profile": "default",
+  "allow_domains": ["api.mod.io", "githubusercontent.com"]
+}
