@@ -3,12 +3,12 @@ name: Build Release
 on:
   push:
     tags:
-      - 'v*' # Сборка запускается только при создании тега (например v1.0)
-  workflow_dispatch: # Или ручной запуск
+      - 'v*' # Сборка запускается при пуше тега v1.0, v2.0 и т.д.
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build EXE
+    name: Build GUI EXE
     runs-on: windows-latest
     
     steps:
@@ -21,12 +21,13 @@ jobs:
         
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
-        pip install pyinstaller
+        pip install requests pyinstaller
         
-    - name: Build EXE
+    - name: Build EXE (Windowed)
       run: |
-        pyinstaller --onefile --name "BonelabModLoader" --icon=NONE src/client.py
+        # --noconsole убирает черное окно
+        # --onefile делает один exe
+        pyinstaller --noconsole --onefile --name "BonelabModLoader" src/client.py
         
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
