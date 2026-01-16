@@ -1,42 +1,25 @@
-name: Build Release
-
-on:
-  push:
-    tags:
-      - 'v*' # Сборка запускается при пуше тега v1.0, v2.0 и т.д.
-  workflow_dispatch:
-
-jobs:
-  build:
-    name: Build GUI EXE
-    runs-on: windows-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-        
-    - name: Install dependencies
-      run: |
-        pip install requests pyinstaller
-        
-    - name: Build EXE (Windowed)
-      run: |
-        # --noconsole убирает черное окно
-        # --onefile делает один exe
-        pyinstaller --noconsole --onefile --name "BonelabModLoader" src/client.py
-        
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: BonelabModLoader
-        path: dist/BonelabModLoader.exe
-
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: dist/BonelabModLoader.exe
+Current runner version: '2.331.0'
+Runner Image Provisioner
+  Hosted Compute Agent
+  Version: 20251211.462
+  Commit: 6cbad8c2bb55d58165063d031ccabf57e2d2db61
+  Build Date: 2025-12-11T16:28:49Z
+  Worker ID: {58a74ef0-ec46-455e-9ace-efc1a6013e9f}
+Operating System
+  Microsoft Windows Server 2025
+  10.0.26100
+  Datacenter
+Runner Image
+  Image: windows-2025
+  Version: 20260111.179.1
+  Included Software: https://github.com/actions/runner-images/blob/win25/20260111.179/images/windows/Windows2025-Readme.md
+  Image Release: https://github.com/actions/runner-images/releases/tag/win25%2F20260111.179
+GITHUB_TOKEN Permissions
+  Contents: read
+  Metadata: read
+  Packages: read
+Secret source: Actions
+Prepare workflow directory
+Prepare all required actions
+Getting action download info
+Error: This request has been automatically failed because it uses a deprecated version of `actions/upload-artifact: v3`. Learn more: https://github.blog/changelog/2024-04-16-deprecation-notice-v3-of-the-artifact-actions/
