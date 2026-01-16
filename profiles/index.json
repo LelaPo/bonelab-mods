@@ -28,5 +28,10 @@
     "path": "profiles/manifest.json",
     "title": "Manifest",
     "description": "Описание отсутствует"
+  },
+  "test_chigur": {
+    "path": "profiles/test_chigur.json",
+    "title": "Вадим Любит Чигура (честно)",
+    "description": "Стрелялка ходилка бродилка"
   }
 }
