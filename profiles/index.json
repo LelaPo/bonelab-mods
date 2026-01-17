@@ -29,6 +29,11 @@
     "title": "Manifest",
     "description": "Описание отсутствует"
   },
+  "sunday_vadim": {
+    "path": "profiles/sunday_vadim.json",
+    "title": "Sunday Vadim",
+    "description": "Midnight Vadim"
+  },
   "test_chigur": {
     "path": "profiles/test_chigur.json",
     "title": "Вадим Любит Чигура (честно)",
