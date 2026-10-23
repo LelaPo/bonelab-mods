@@ -3,16 +3,26 @@ from pathlib import Path
 from rich.progress import Progress, TextColumn, BarColumn, DownloadColumn, TransferSpeedColumn
 
 from src.config import IS_AUTHOR_MODE, get_bonelab_mods_path
-from src.cli.ui import console, print_banner, render_mods_table
+from src.cli.ui import (
+    console,
+    print_banner,
+    render_mods_table,
+    render_collections_table,
+    render_shares_table,
+)
+from src.passphrases import generate_passphrase
 from src.core.backup import count_installed_mods, backup_existing_mods
 from src.core.installer import download_and_extract
 from src.core.builder import PackBuilder
+from src.core.collections import CollectionManager
 from src.services.gist import GistService
 from src.services.discord import DiscordTracker
 
 
-def action_install_pack():
-    console.rule("[bold cyan]Установка пака[/bold cyan]")
+# ==================== УСТАНОВКА ДЛЯ КЛИЕНТА ====================
+
+def action_install_share():
+    console.rule("[bold cyan]Установка по коду раздачи[/bold cyan]")
 
     mods_dir = get_bonelab_mods_path()
     console.print(f"[dim]Путь установки:[/dim] [cyan]{mods_dir}[/cyan]")
@@ -32,25 +42,30 @@ def action_install_pack():
         console.print("[dim]Директория модов чистая.[/dim]")
 
     console.print()
-    passphrase = console.input("[bold]Введите код пака:[/bold] ").strip()
+    passphrase = console.input("[bold]Введите 3 слова кода раздачи:[/bold] ").strip()
     if not passphrase:
         return
 
     gist_service = GistService()
-    with console.status("[cyan]Подключение к облачному реестру...[/cyan]"):
+    with console.status("[cyan]Проверка раздачи в облаке...[/cyan]"):
         try:
-            pack_data = gist_service.fetch_pack(passphrase)
+            share_data = gist_service.fetch_active_share(passphrase)
         except Exception as e:
-            console.print(f"[red][!] Ошибка получения пака: {e}[/red]\n")
+            console.print(f"[red][!] Ошибка: {e}[/red]\n")
             return
 
-    mods = pack_data.get("mods", [])
+    mods = share_data.get("mods", [])
     if not mods:
-        console.print("[yellow][!] Пак не содержит модов для установки.[/yellow]\n")
+        console.print("[yellow][!] Раздача не содержит модов для установки.[/yellow]\n")
         return
 
-    console.print(f"\n[green][+] Найдено модов в паке:[/green] [bold]{len(mods)}[/bold]\n")
-    console.print(render_mods_table(mods, title=f"Содержимое пака: {passphrase}"))
+    collections_included = ", ".join(share_data.get("collections", []))
+    console.print(f"\n[green][+] Найдена раздача:[/green] [bold]{passphrase}[/bold]")
+    if collections_included:
+        console.print(f"[dim]Коллекции в составе:[/dim] [magenta]{collections_included}[/magenta]")
+    console.print(f"[dim]Модов к установке:[/dim] [bold]{len(mods)}[/bold]\n")
+
+    console.print(render_mods_table(mods, title=f"Содержимое раздачи: {passphrase}"))
     console.print()
 
     dry_run = console.input("Тестовый режим (Dry-run в ./test_mods/)? [y/N]: ").strip().lower() == "y"
@@ -113,53 +128,209 @@ def action_install_pack():
     console.print(f"\n[bold green][+] Установка завершена.[/bold green] Путь: [cyan]{target_dir}[/cyan]\n")
 
 
-def action_create_pack():
+# ==================== УПРАВЛЕНИЕ КОЛЛЕКЦИЯМИ (АВТОР) ====================
+
+def menu_collections():
+    cm = CollectionManager()
     builder = PackBuilder()
-    pack = builder.create_empty_pack()
-    passphrase = pack["passphrase"]
 
-    console.rule("[bold cyan]Сборка пака[/bold cyan]")
-    console.print(f"\nКод пака: [bold bright_cyan]{passphrase}[/bold bright_cyan]\n")
-    console.print("[dim]Вставляйте ссылки по одной. Нажмите Enter на пустой строке для завершения сборки.[/dim]\n")
-
-    count = 1
     while True:
-        url = console.input(f"Ссылка #{count} (Enter - завершить): ").strip()
-        if not url:
+        console.clear()
+        console.rule("[bold cyan]Управление коллекциями в облаке[/bold cyan]")
+        cols = cm.list_collections()
+
+        if not cols:
+            console.print("[dim]У вас пока нет ни одной коллекции.[/dim]\n")
+        else:
+            console.print(render_collections_table(cols))
+            console.print()
+
+        console.print("[1] Открыть / редактировать коллекцию")
+        console.print("[2] Создать новую коллекцию")
+        console.print("[3] Удалить коллекцию")
+        console.print("[0] Назад в главное меню\n")
+
+        choice = console.input("Выбор [0-3]: ").strip()
+        if choice == "0":
             break
 
-        with console.status("[cyan]Получение метаданных PCVR с mod.io...[/cyan]"):
-            ok, result = builder.resolve_mod_from_url(url)
-            if not ok:
-                console.print(f"[red][!] {result}[/red]")
+        if choice == "2":
+            name = console.input("Название коллекции: ").strip()
+            if not name:
                 continue
+            desc = console.input("Описание (опционально): ").strip()
+            with console.status("[cyan]Создание коллекции в Gist...[/cyan]"):
+                try:
+                    cm.create_collection(name, desc)
+                    console.print(f"[green][+] Коллекция '{name}' создана![/green]")
+                except Exception as e:
+                    console.print(f"[red][!] Ошибка: {e}[/red]")
+            console.input("[dim]Enter для продолжения...[/dim]")
 
-            mod_item = result
-            pack["mods"].append(mod_item)
+        elif choice == "1" and cols:
+            num = console.input("Номер коллекции для открытия: ").strip()
+            if not num.isdigit() or not (1 <= int(num) <= len(cols)):
+                continue
+            selected_col = cols[int(num) - 1]
+            _edit_collection(cm, builder, selected_col["slug"])
 
-            console.print(f"[green][+] Добавлен:[/green] [bold]{mod_item['name']}[/bold]")
-            console.print(
-                f"    [dim]Файл: {mod_item['filename']} | File ID: {mod_item['file_id']} | Mod ID: {mod_item['id']}[/dim]"
-            )
-            count += 1
+        elif choice == "3" and cols:
+            num = console.input("Номер коллекции для УДАЛЕНИЯ: ").strip()
+            if not num.isdigit() or not (1 <= int(num) <= len(cols)):
+                continue
+            selected_col = cols[int(num) - 1]
+            confirm = console.input(f"Удалить '{selected_col['name']}'? [y/N]: ").strip().lower()
+            if confirm == "y":
+                with console.status("[cyan]Удаление из Gist...[/cyan]"):
+                    cm.delete_collection(selected_col["slug"])
+                console.print("[green][+] Удалено.[/green]")
+                console.input("[dim]Enter для продолжения...[/dim]")
 
-    if not pack["mods"]:
-        console.print("[yellow]Пак пуст. Сборка отменена.[/yellow]\n")
+
+def _edit_collection(cm: CollectionManager, builder: PackBuilder, slug: str):
+    while True:
+        console.clear()
+        col = cm.get_collection(slug)
+        if not col:
+            break
+
+        console.rule(f"[bold cyan]Коллекция: {col['name']}[/bold cyan]")
+        if col.get("description"):
+            console.print(f"[dim italic]{col['description']}[/dim italic]\n")
+
+        mods = col.get("mods", [])
+        if not mods:
+            console.print("[dim]В этой коллекции еще нет модов.[/dim]\n")
+        else:
+            console.print(render_mods_table(mods))
+            console.print()
+
+        console.print("[1] Добавить мод по ссылке mod.io")
+        console.print("[2] Удалить мод из коллекции")
+        console.print("[0] Назад к списку коллекций\n")
+
+        sub = console.input("Выбор [0-2]: ").strip()
+        if sub == "0":
+            break
+
+        if sub == "1":
+            url = console.input("Ссылка на страницу мода (mod.io): ").strip()
+            if not url:
+                continue
+            with console.status("[cyan]Получение PCVR-версии...[/cyan]"):
+                ok, res = builder.resolve_mod_from_url(url)
+                if not ok:
+                    console.print(f"[red][!] {res}[/red]")
+                else:
+                    success, msg = cm.add_mod(slug, res)
+                    if success:
+                        console.print(f"[green][+] Мод '{res['name']}' добавлен![/green]")
+                    else:
+                        console.print(f"[yellow][!] {msg}[/yellow]")
+            console.input("[dim]Enter для продолжения...[/dim]")
+
+        elif sub == "2" and mods:
+            m_num = console.input("Номер мода для удаления: ").strip()
+            if m_num.isdigit() and (1 <= int(m_num) <= len(mods)):
+                mod_to_del = mods[int(m_num) - 1]
+                with console.status("[cyan]Удаление мода из коллекции...[/cyan]"):
+                    cm.remove_mod(slug, mod_to_del["id"])
+                console.print(f"[green][+] Мод '{mod_to_del['name']}' удален.[/green]")
+                console.input("[dim]Enter для продолжения...[/dim]")
+
+
+# ==================== ГЕНЕРАЦИЯ РАЗДАЧИ (SHARE CODE) ====================
+
+def action_generate_share():
+    console.clear()
+    console.rule("[bold cyan]Сгенерировать код раздачи[/bold cyan]")
+
+    cm = CollectionManager()
+    cols = cm.list_collections()
+    if not cols:
+        console.print("[yellow][!] Сначала создайте хотя бы одну коллекцию в меню [1].[/yellow]\n")
         return
 
-    console.print()
-    console.print(render_mods_table(pack["mods"], title=f"Итоговый состав: '{passphrase}'"))
-    console.print()
+    console.print(render_collections_table(cols))
+    console.print("\n[dim]Введите номера коллекций через запятую или пробел (например: 1, 2) или 'all':[/dim]")
+    selection = console.input("Коллекции для объединения: ").strip()
+    if not selection:
+        return
+
+    selected_cols = []
+    if selection.lower() == "all":
+        selected_cols = cols
+    else:
+        parts = [p.strip() for p in selection.replace(",", " ").split() if p.strip().isdigit()]
+        for p in parts:
+            idx = int(p) - 1
+            if 0 <= idx < len(cols):
+                selected_cols.append(cols[idx])
+
+    if not selected_cols:
+        console.print("[red][!] Ни одной коллекции не выбрано.[/red]\n")
+        return
+
+    merged_mods = cm.merge_mods(selected_cols)
+    if not merged_mods:
+        console.print("[yellow][!] В выбранных коллекциях нет модов.[/yellow]\n")
+        return
+
+    ttl_input = console.input("Срок действия кода в часах [по умолчанию 24]: ").strip()
+    ttl_hours = int(ttl_input) if ttl_input.isdigit() and int(ttl_input) > 0 else 24
+
+    passphrase = generate_passphrase()
+    col_names = [c["name"] for c in selected_cols]
+
+    console.print(f"\n[green]Формируется раздача:[/green] [bold bright_cyan]{passphrase}[/bold bright_cyan]")
+    console.print(f"[dim]Включено коллекций:[/dim] {len(col_names)} ({', '.join(col_names)})")
+    console.print(f"[dim]Уникальных файлов модов:[/dim] {len(merged_mods)}")
+    console.print(f"[dim]Время жизни кода:[/dim] {ttl_hours} ч.\n")
 
     gist_service = GistService()
-    with console.status("[cyan]Публикация пака в облачный реестр...[/cyan]"):
+    with console.status("[cyan]Публикация временной раздачи в Gist...[/cyan]"):
         try:
-            gist_service.publish_pack(passphrase, pack)
-            console.print(f"[bold green][+] Пак успешно опубликован в облаке![/bold green]")
-            console.print(f"Код для загрузки другом: [bold bright_cyan]{passphrase}[/bold bright_cyan]\n")
+            gist_service.create_share(passphrase, merged_mods, col_names, ttl_hours=ttl_hours)
+            console.print(f"[bold green][+] Раздача готова![/bold green]")
+            console.print(f"Код для друга: [bold bright_cyan]{passphrase}[/bold bright_cyan]\n")
         except Exception as e:
-            console.print(f"[red][!] Ошибка выгрузки: {e}[/red]\n")
+            console.print(f"[red][!] Ошибка публикации: {e}[/red]\n")
 
+
+# ==================== МОНИТОРИНГ И ОТЗЫВ ====================
+
+def action_manage_shares():
+    console.clear()
+    console.rule("[bold cyan]Активные раздачи[/bold cyan]")
+
+    gist_service = GistService()
+    with console.status("[cyan]Загрузка раздач из Gist...[/cyan]"):
+        try:
+            gist_service.cleanup_expired()
+            shares = gist_service.get_shares()
+        except Exception as e:
+            console.print(f"[red][!] Ошибка: {e}[/red]\n")
+            return
+
+    if not shares:
+        console.print("[dim]Нет активных раздач.[/dim]\n")
+        return
+
+    console.print(render_shares_table(shares))
+    console.print()
+
+    revoke_code = console.input("Введите код для ДОСРОЧНОГО отзыва (или Enter для выхода): ").strip()
+    if not revoke_code:
+        return
+
+    with console.status("[cyan]Отзыв кода раздачи...[/cyan]"):
+        if gist_service.revoke_share(revoke_code):
+            console.print(f"[green][+] Раздача '{revoke_code}' отозвана и удалена из облака.[/green]\n")
+        else:
+            console.print(f"[yellow][!] Раздача с кодом '{revoke_code}' не найдена.[/yellow]\n")
+
+
+# ==================== ГЛАВНЫЙ ЦИКЛ ====================
 
 def run_app():
     while True:
@@ -167,23 +338,30 @@ def run_app():
         print_banner(IS_AUTHOR_MODE)
 
         if IS_AUTHOR_MODE:
-            console.print("[1] Собрать новый пак")
-            console.print("[2] Установить пак")
+            console.print("[1] Мои коллекции (Создать / Добавить моды)")
+            console.print("[2] Сгенерировать код раздачи (Share Code)")
+            console.print("[3] Активные раздачи (Мониторинг / Отозвать)")
+            console.print("[4] Установить по коду раздачи")
             console.print("[0] Выход\n")
-            choice = console.input("Выбор [0-2]: ").strip()
+            choice = console.input("Выбор [0-4]: ").strip()
         else:
-            console.print("[1] Установить пак модов")
+            console.print("[1] Установить моды по коду")
             console.print("[0] Выход\n")
             choice = console.input("Выбор [0-1]: ").strip()
             if choice == "1":
-                choice = "2"
+                choice = "4"
 
         if choice == "1" and IS_AUTHOR_MODE:
-            action_create_pack()
-            console.input("[dim]Нажмите Enter для возврата в меню...[/dim]")
-        elif choice == "2":
-            action_install_pack()
-            console.input("[dim]Нажмите Enter для возврата в меню...[/dim]")
+            menu_collections()
+        elif choice == "2" and IS_AUTHOR_MODE:
+            action_generate_share()
+            console.input("[dim]Enter для возврата в меню...[/dim]")
+        elif choice == "3" and IS_AUTHOR_MODE:
+            action_manage_shares()
+            console.input("[dim]Enter для возврата в меню...[/dim]")
+        elif choice == "4":
+            action_install_share()
+            console.input("[dim]Enter для возврата в меню...[/dim]")
         elif choice == "0":
             console.print("[dim]Завершение работы.[/dim]")
             break

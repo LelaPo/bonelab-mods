@@ -1,6 +1,7 @@
 import json
 import requests
-from typing import Dict, Any, Optional
+from datetime import datetime, timezone, timedelta
+from typing import Dict, Any, List, Optional
 from src.config import MASTER_GIST_ID, GITHUB_TOKEN
 
 
@@ -12,70 +13,160 @@ class GistService:
 
     def _get_auth_headers(self) -> Dict[str, str]:
         if not self.token:
-            raise ValueError("Для публикации пака требуется GITHUB_TOKEN в .env!")
+            raise ValueError("Для управления коллекциями и раздачами требуется GITHUB_TOKEN в .env!")
         return {
             **self.base_headers,
             "Authorization": f"Bearer {self.token}",
             "Accept": "application/vnd.github+json",
         }
 
-    def get_registry(self) -> Dict[str, str]:
-        """Получает маппинг: passphrase -> raw_url пака."""
+    def _fetch_master_gist(self) -> Dict[str, Any]:
+        """Получает сырые данные мастер-гиста."""
+        if not self.master_gist_id:
+            raise ValueError("MASTER_GIST_ID не задан в конфигурации (.env)!")
+
+        headers = self._get_auth_headers() if self.token else self.base_headers
         url = f"https://api.github.com/gists/{self.master_gist_id}"
-        resp = requests.get(url, headers=self.base_headers, timeout=10)
+        resp = requests.get(url, headers=headers, timeout=10)
         resp.raise_for_status()
+        return resp.json().get("files", {})
 
-        files = resp.json().get("files", {})
-        if "registry.json" not in files:
-            raise KeyError("Файл registry.json не найден в мастер-гисте!")
-
-        return json.loads(files["registry.json"]["content"])
-
-    def fetch_pack(self, passphrase: str) -> Dict[str, Any]:
-        """Ищет пак в реестре и загружает его манифест."""
-        registry = self.get_registry()
-        pack_url = registry.get(passphrase)
-        if not pack_url:
-            raise FileNotFoundError(f"Пак '{passphrase}' не найден в реестре.")
-
-        resp = requests.get(pack_url, headers=self.base_headers, timeout=10)
-        resp.raise_for_status()
-        return resp.json()
-
-    def publish_pack(self, passphrase: str, pack_data: dict) -> str:
-        """Создает отдельный Gist под пак и обновляет registry.json."""
+    def _patch_master_gist(self, files_payload: Dict[str, Dict[str, str]]):
+        """Отправляет изменения в мастер-гист."""
         headers = self._get_auth_headers()
+        url = f"https://api.github.com/gists/{self.master_gist_id}"
+        resp = requests.patch(url, headers=headers, json={"files": files_payload}, timeout=15)
+        resp.raise_for_status()
 
-        # 1. Создаем Gist для пака
+    # ==================== КОЛЛЕКЦИИ ====================
+
+    def get_collections(self) -> Dict[str, Any]:
+        """Возвращает словарь всех коллекций автора: {slug: {...}}."""
+        files = self._fetch_master_gist()
+        if "collections.json" not in files:
+            return {}
+        try:
+            return json.loads(files["collections.json"]["content"])
+        except Exception:
+            return {}
+
+    def save_collections(self, collections: Dict[str, Any]):
+        """Сохраняет обновленный словарь коллекций в Gist."""
         payload = {
-            "description": f"Bonelab Pack: {passphrase}",
-            "public": False,
-            "files": {
-                f"{passphrase}.json": {
-                    "content": json.dumps(pack_data, indent=2, ensure_ascii=False)
-                }
-            },
-        }
-        res = requests.post("https://api.github.com/gists", headers=headers, json=payload, timeout=15)
-        res.raise_for_status()
-        raw_url = res.json()["files"][f"{passphrase}.json"]["raw_url"]
-
-        # 2. Обновляем мастер-реестр
-        registry = self.get_registry()
-        registry[passphrase] = raw_url
-
-        patch_payload = {
-            "files": {
-                "registry.json": {
-                    "content": json.dumps(registry, indent=2, ensure_ascii=False)
-                }
+            "collections.json": {
+                "content": json.dumps(collections, indent=2, ensure_ascii=False)
             }
         }
-        update_res = requests.patch(
-            f"https://api.github.com/gists/{self.master_gist_id}",
-            headers=headers,
-            json=patch_payload,
-            timeout=15,
-        )
-        update_res.raise_for_status()
-        return raw_url
+        self._patch_master_gist(payload)
+
+    # ==================== СЕССИИ РАЗДАЧ (SHARES) ====================
+
+    def get_shares(self) -> Dict[str, Any]:
+        """Возвращает словарь активных раздач: {passphrase: {...}}."""
+        files = self._fetch_master_gist()
+        if "shares.json" not in files:
+            return {}
+        try:
+            content = json.loads(files["shares.json"]["content"])
+            # Убеждаемся, что content — это словарь
+            return content if isinstance(content, dict) else {}
+        except Exception:
+            return {}
+
+    def create_share(
+        self,
+        passphrase: str,
+        mods: List[Dict[str, Any]],
+        collection_names: List[str],
+        ttl_hours: int = 24
+    ) -> Dict[str, Any]:
+        """Создает временную раздачу на заданное количество часов."""
+        now = datetime.now(timezone.utc)
+        expires_at = now + timedelta(hours=ttl_hours)
+
+        shares = self.get_shares()
+        share_data = {
+            "passphrase": passphrase,
+            "created_at": now.isoformat(),
+            "expires_at": expires_at.isoformat(),
+            "collections": collection_names,
+            "mods": mods
+        }
+        shares[passphrase] = share_data
+
+        # Заодно подчищаем старые
+        cleaned_shares = self._filter_active_shares(shares)
+
+        payload = {
+            "shares.json": {
+                "content": json.dumps(cleaned_shares, indent=2, ensure_ascii=False)
+            }
+        }
+        self._patch_master_gist(payload)
+        return share_data
+
+    def revoke_share(self, passphrase: str) -> bool:
+        """Досрочно удаляет раздачу."""
+        shares = self.get_shares()
+        if passphrase in shares:
+            del shares[passphrase]
+            payload = {
+                "shares.json": {
+                    "content": json.dumps(shares, indent=2, ensure_ascii=False)
+                }
+            }
+            self._patch_master_gist(payload)
+            return True
+        return False
+
+    def fetch_active_share(self, passphrase: str) -> Dict[str, Any]:
+        """
+        Клиентский метод: находит раздачу по 3 словам и проверяет срок ее действия.
+        """
+        shares = self.get_shares()
+        share = shares.get(passphrase)
+        if not share:
+            raise FileNotFoundError(f"Раздача с кодом '{passphrase}' не найдена.")
+
+        # Проверка срока жизни
+        expires_at_str = share.get("expires_at")
+        if expires_at_str:
+            expires_at = datetime.fromisoformat(expires_at_str)
+            if datetime.now(timezone.utc) > expires_at:
+                raise TimeoutError(f"Срок действия кода '{passphrase}' истек.")
+
+        return share
+
+    def cleanup_expired(self) -> int:
+        """Удаляет просроченные раздачи."""
+        shares = self.get_shares()
+        active = self._filter_active_shares(shares)
+        removed = len(shares) - len(active)
+        if removed > 0:
+            payload = {
+                "shares.json": {
+                    "content": json.dumps(active, indent=2, ensure_ascii=False)
+                }
+            }
+            self._patch_master_gist(payload)
+        return removed
+
+    @staticmethod
+    def _filter_active_shares(shares: Dict[str, Any]) -> Dict[str, Any]:
+        now = datetime.now(timezone.utc)
+        active = {}
+        for code, data in shares.items():
+            # Если запись не является словарем (битая/старая), пропускаем
+            if not isinstance(data, dict):
+                continue
+
+            exp_str = data.get("expires_at")
+            if not exp_str:
+                active[code] = data
+                continue
+            try:
+                if datetime.fromisoformat(exp_str) > now:
+                    active[code] = data
+            except Exception:
+                pass
+        return active
