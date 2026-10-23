@@ -15,12 +15,163 @@ from src.core.backup import count_installed_mods, backup_existing_mods
 from src.core.detector import is_mod_already_installed, update_sync_state
 from src.core.installer import download_and_extract
 from src.core.builder import PackBuilder
+from src.core.importer import scan_and_resolve_mods
 from src.core.collections import CollectionManager
 from src.services.gist import GistService
 from src.services.discord import DiscordTracker
 
 
 # ==================== УСТАНОВКА ДЛЯ КЛИЕНТА ====================
+# ==================== ИМПОРТ ИЗ УСТАНОВЛЕННЫХ МОДОВ ИГРЫ ====================
+
+def action_import_from_game():
+    console.clear()
+    console.rule("[bold cyan]Импорт модов из игры в облачную коллекцию[/bold cyan]")
+
+    mods_dir = get_bonelab_mods_path()
+    console.print(f"[dim]Сканирование директории:[/dim] [cyan]{mods_dir}[/cyan]\n")
+
+    if not mods_dir.exists():
+        console.print("[red][!] Папка Mods не найдена.[/red]\n")
+        return
+
+    cm = CollectionManager()
+
+    resolved_mods = []
+    unresolved_mods = []
+
+    with Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+        console=console,
+    ) as progress:
+        task = progress.add_task("[cyan]Поиск модов на mod.io...[/cyan]", total=100)
+
+        def _on_progress(title: str, current: int, total: int):
+            progress.update(
+                task,
+                total=total,
+                completed=current,
+                description=f"[cyan]Поиск:[/cyan] [bold]{title[:30]}[/bold]"
+            )
+
+        resolved_mods, unresolved_mods = scan_and_resolve_mods(
+            mods_dir=mods_dir,
+            gist_service=GistService(),
+            on_progress=_on_progress
+        )
+
+    console.print()
+    console.print(f"[green][+] Успешно распознано автоматически:[/green] [bold]{len(resolved_mods)}[/bold]")
+    
+    # Интерактивный резолв ненайденных модов
+    if unresolved_mods:
+        console.print(f"[yellow][!] Не удалось сопоставить автоматически: {len(unresolved_mods)} модов[/yellow]")
+        resolve_manual = console.input("Хотите вручную указать ссылки mod.io для оставшихся? [Y/n]: ").strip().lower() != "n"
+        
+        if resolve_manual:
+            modio_client = PackBuilder().modio
+            resolved_manual_count = 0
+            for un in list(unresolved_mods):
+                console.print(f"\n[cyan]Мод:[/cyan] [bold]{un['title']}[/bold] [dim](папка: {un['folder_name']})[/dim]")
+                url = console.input("  Вставьте ссылку mod.io (Enter - пропустить): ").strip()
+                if not url:
+                    continue
+
+                ok, res = PackBuilder().resolve_mod_from_url(url)
+                if ok:
+                    resolved_mods.append(res)
+                    unresolved_mods.remove(un)
+                    resolved_manual_count += 1
+                    # Запоминаем в локальный sync_state, чтобы больше никогда не спрашивать
+                    update_sync_state(
+                        target_dir=mods_dir,
+                        mod_id=res["id"],
+                        file_id=res["file_id"],
+                        mod_name=res["name"],
+                        folder_name=un["folder_name"]
+                    )
+                    console.print(f"  [green][+] Добавлен:[/green] [bold]{res['name']}[/bold]")
+                else:
+                    console.print(f"  [red][!] {res}[/red]")
+            
+            if resolved_manual_count > 0:
+                console.print(f"\n[green][+] Дополнительно привязано модов:[/green] [bold]{resolved_manual_count}[/bold]")
+
+    console.print()
+
+    if not resolved_mods:
+        console.print("[red][!] Ни одного мода не выбрано для сохранения.[/red]\n")
+        return
+
+    # Дедупликация и подробный отчет по повторам
+    unique_resolved = []
+    seen_ids = {}
+    duplicates_detected = []
+
+    for m in resolved_mods:
+        mid = m["id"]
+        if mid not in seen_ids:
+            seen_ids[mid] = m["name"]
+            unique_resolved.append(m)
+        else:
+            duplicates_detected.append((m["name"], mid, seen_ids[mid]))
+
+    if duplicates_detected:
+        console.print(f"[yellow][!] Предупреждение: обнаружены повторы Mod ID ({len(duplicates_detected)} шт.):[/yellow]")
+        for mod_name, mod_id, first_name in duplicates_detected:
+            console.print(f"   [dim]• Мод '{mod_name}' (ID: {mod_id}) уже был добавлен как '{first_name}'[/dim]")
+        console.print()
+
+    # Спрашиваем куда сохранить
+    existing_cols = cm.list_collections()
+    console.print("[bold]Куда сохранить найденные моды?[/bold]")
+    console.print("  [0] Создать НОВУЮ коллекцию")
+    for idx, c in enumerate(existing_cols, 1):
+        console.print(f"  [{idx}] В существующую: [bold cyan]{c['name']}[/bold cyan] ({len(c.get('mods', []))} модов)")
+
+    dest_choice = console.input(f"\nВыбор [0-{len(existing_cols)}]: ").strip()
+    target_slug = None
+
+    if dest_choice == "0":
+        target_name = console.input("Название новой коллекции: ").strip()
+        if not target_name:
+            console.print("[yellow]Отменено.[/yellow]\n")
+            return
+        target_desc = console.input("Описание (опционально): ").strip()
+        with console.status("[cyan]Создание коллекции в Gist...[/cyan]"):
+            try:
+                col_data = cm.create_collection(target_name, target_desc)
+                target_slug = col_data["slug"]
+            except Exception as e:
+                console.print(f"[red][!] Ошибка создания коллекции: {e}[/red]\n")
+                return
+    elif dest_choice.isdigit() and 1 <= int(dest_choice) <= len(existing_cols):
+        target_slug = existing_cols[int(dest_choice) - 1]["slug"]
+    else:
+        console.print("[yellow]Отменено.[/yellow]\n")
+        return
+
+    with console.status(f"[cyan]Добавление {len(unique_resolved)} модов в коллекцию '{target_slug}'...[/cyan]"):
+        gist_service = GistService()
+        cols = gist_service.get_collections()
+        target_col = cols.get(target_slug)
+
+        existing_in_col = {m.get("id") for m in target_col.get("mods", [])}
+        added_count = 0
+
+        for mod in unique_resolved:
+            if mod.get("id") not in existing_in_col:
+                target_col["mods"].append(mod)
+                existing_in_col.add(mod.get("id"))
+                added_count += 1
+
+        cols[target_slug] = target_col
+        gist_service.save_collections(cols)
+
+    console.print(f"\n[bold green][+] Успешно сохранено {added_count} новых модов в коллекцию '{target_slug}'![/bold green]")
+    console.print(f"[dim]Всего модов в коллекции:[/dim] {len(target_col['mods'])}\n")
 
 def action_install_share():
     console.rule("[bold cyan]Установка по коду раздачи[/bold cyan]")
@@ -366,28 +517,32 @@ def run_app():
         print_banner(IS_AUTHOR_MODE)
 
         if IS_AUTHOR_MODE:
-            console.print("[1] Мои коллекции (Создать / Добавить моды)")
-            console.print("[2] Сгенерировать код раздачи (Share Code)")
-            console.print("[3] Активные раздачи (Мониторинг / Отозвать)")
-            console.print("[4] Установить по коду раздачи")
+            console.print("[1] Мои коллекции (Создать / Редактировать)")
+            console.print("[2] Импортировать установленные моды из игры в коллекцию [NEW]")
+            console.print("[3] Сгенерировать код раздачи (Share Code)")
+            console.print("[4] Активные раздачи (Мониторинг / Отозвать)")
+            console.print("[5] Установить по коду раздачи")
             console.print("[0] Выход\n")
-            choice = console.input("Выбор [0-4]: ").strip()
+            choice = console.input("Выбор [0-5]: ").strip()
         else:
             console.print("[1] Установить моды по коду")
             console.print("[0] Выход\n")
             choice = console.input("Выбор [0-1]: ").strip()
             if choice == "1":
-                choice = "4"
+                choice = "5"
 
         if choice == "1" and IS_AUTHOR_MODE:
             menu_collections()
         elif choice == "2" and IS_AUTHOR_MODE:
-            action_generate_share()
+            action_import_from_game()
             console.input("[dim]Enter для возврата в меню...[/dim]")
         elif choice == "3" and IS_AUTHOR_MODE:
+            action_generate_share()
+            console.input("[dim]Enter для возврата в меню...[/dim]")
+        elif choice == "4" and IS_AUTHOR_MODE:
             action_manage_shares()
             console.input("[dim]Enter для возврата в меню...[/dim]")
-        elif choice == "4":
+        elif choice == "5":
             action_install_share()
             console.input("[dim]Enter для возврата в меню...[/dim]")
         elif choice == "0":
