@@ -15,17 +15,10 @@ def download_and_extract(
     on_start: Optional[Callable[[int], None]] = None,
     on_chunk: Optional[Callable[[int, int, float], None]] = None,
     on_extract: Optional[Callable[[], None]] = None,
-):
+) -> Optional[str]:
     """
     Потоково скачивает zip-архив с mod.io во временную папку и распаковывает в target_dir.
-
-    :param url: binary_url файла
-    :param filename: имя архива
-    :param target_dir: директория модов игры
-    :param api_key: mod.io API ключ
-    :param on_start: колбэк(total_bytes)
-    :param on_chunk: колбэк(bytes_chunk, total_downloaded, speed_mbps)
-    :param on_extract: колбэк вызываемый перед началом распаковки
+    Возвращает имя распакованной папки мода (если удалось определить).
     """
     params = {"api_key": api_key} if api_key else {}
 
@@ -58,5 +51,13 @@ def download_and_extract(
             on_extract()
 
         target_dir.mkdir(parents=True, exist_ok=True)
+        extracted_folder = None
         with zipfile.ZipFile(tmp_zip, "r") as z:
+            namelist = z.namelist()
+            if namelist:
+                top_name = namelist[0].split("/")[0].split("\\")[0]
+                if top_name:
+                    extracted_folder = top_name
             z.extractall(target_dir)
+
+        return extracted_folder
