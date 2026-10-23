@@ -12,6 +12,7 @@ from src.cli.ui import (
 )
 from src.passphrases import generate_passphrase
 from src.core.backup import count_installed_mods, backup_existing_mods
+from src.core.detector import is_mod_already_installed, update_sync_state
 from src.core.installer import download_and_extract
 from src.core.builder import PackBuilder
 from src.core.collections import CollectionManager
@@ -92,8 +93,21 @@ def action_install_share():
         console=console,
     ) as progress:
         done_count = 0
+        skipped_count = 0
+
         for idx, mod in enumerate(mods):
-            t = progress.add_task(f"[bold]{mod['name'][:28]}[/bold]", total=None)
+            mod_title = mod["name"][:28]
+
+            # Проверяем, установлен ли уже мод
+            if is_mod_already_installed(target_dir, mod):
+                t = progress.add_task(f"[dim]↷ {mod_title}[/dim]", total=100, completed=100)
+                progress.update(t, description=f"[dim green]✓ {mod_title} (уже установлен)[/dim green]")
+                discord.update_live(passphrase, mods, idx, 100, 100, "Уже установлен", force=True)
+                skipped_count += 1
+                done_count += 1
+                continue
+
+            t = progress.add_task(f"[bold]{mod_title}[/bold]", total=None)
 
             def _on_start(total_bytes):
                 progress.update(t, total=total_bytes)
@@ -111,7 +125,7 @@ def action_install_share():
                 progress.update(t, description=f"[cyan]Распаковка: {mod['filename']}[/cyan]")
 
             try:
-                download_and_extract(
+                folder_name = download_and_extract(
                     url=mod["download_url"],
                     filename=mod["filename"],
                     target_dir=target_dir,
@@ -119,13 +133,27 @@ def action_install_share():
                     on_chunk=_on_chunk,
                     on_extract=_on_extract,
                 )
-                progress.update(t, description=f"[green][+] {mod['name'][:28]}[/green]")
+                # Фиксируем установку в .sync_state.json
+                update_sync_state(
+                    target_dir=target_dir,
+                    mod_id=mod.get("id"),
+                    file_id=mod.get("file_id"),
+                    mod_name=mod.get("name"),
+                    folder_name=folder_name,
+                )
+                progress.update(t, description=f"[green][+] {mod_title}[/green]")
                 done_count += 1
             except Exception as e:
-                progress.update(t, description=f"[red][!] {mod['name'][:28]} ({e})[/red]")
+                progress.update(t, description=f"[red][!] {mod_title} ({e})[/red]")
 
     discord.finish(passphrase, mods, success=(done_count == len(mods)))
-    console.print(f"\n[bold green][+] Установка завершена.[/bold green] Путь: [cyan]{target_dir}[/cyan]\n")
+
+    summary_text = f"\n[bold green][+] Установка завершена.[/bold green] Установлено: [bold]{done_count - skipped_count}[/bold]"
+    if skipped_count > 0:
+        summary_text += f", пропущено: [yellow]{skipped_count}[/yellow]"
+    summary_text += f". Путь: [cyan]{target_dir}[/cyan]\n"
+
+    console.print(summary_text)
 
 
 # ==================== УПРАВЛЕНИЕ КОЛЛЕКЦИЯМИ (АВТОР) ====================
