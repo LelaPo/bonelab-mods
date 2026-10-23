@@ -65,12 +65,11 @@ class GistService:
         """Возвращает словарь активных раздач: {passphrase: {...}}."""
         files = self._fetch_master_gist()
         if "shares.json" not in files:
-            # Обратная совместимость с registry.json, если был
-            if "registry.json" in files:
-                return json.loads(files["registry.json"]["content"])
             return {}
         try:
-            return json.loads(files["shares.json"]["content"])
+            content = json.loads(files["shares.json"]["content"])
+            # Убеждаемся, что content — это словарь
+            return content if isinstance(content, dict) else {}
         except Exception:
             return {}
 
@@ -157,6 +156,10 @@ class GistService:
         now = datetime.now(timezone.utc)
         active = {}
         for code, data in shares.items():
+            # Если запись не является словарем (битая/старая), пропускаем
+            if not isinstance(data, dict):
+                continue
+
             exp_str = data.get("expires_at")
             if not exp_str:
                 active[code] = data
